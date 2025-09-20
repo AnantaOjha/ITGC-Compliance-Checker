@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ITGC Compliance Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
+        .header { background: #343a40; color: white; padding: 15px 20px; margin: -40px -40px 30px -40px; }
+        .card { border: 1px solid #ddd; padding: 20px; margin: 15px 0; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .log-entry { padding: 8px; border-bottom: 1px solid #eee; }
+        .pdf-button { background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 10px 0; }
+        .pdf-button:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span style="float: left;">
+            <h2 style="margin: 0;">ITGC Compliance Dashboard</h2>
+        </span>
+        <span style="float: right;">
+            {% if user.is_authenticated %}
+                Welcome, <strong>{{ user.username }}</strong>! 
+                <a href="{% url 'logout' %}" style="color: #ffc107; margin-left: 15px;">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" style="color: #ffc107;">Login</a>
+            {% endif %}
+        </span>
+        <div style="clear: both;"></div>
+    </div>
+
+    <!-- PDF Report Button -->
+    <div style="text-align: center; margin: 20px 0;">
+        <a href="{% url 'generate_report' %}" class="pdf-button">
+            📊 Generate PDF Compliance Report
+        </a>
+    </div>
+
+    <div class="card">
+        <h2>Systems Being Audited ({{ total_systems }})</h2>
+        <ul>
+            {% for system in systems %}
+                <li><strong>{{ system.name }}</strong>: {{ system.description }}</li>
+            {% empty %}
+                <li>No systems added yet. <a href="/admin/audit/system/add/">Add systems in admin</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>Recent Access Logs</h2>
+        {% for log in access_logs %}
+            <div class="log-entry">
+                {{ log.timestamp|date:"M d, Y H:i" }} - 
+                {{ log.user|default:"Unknown" }} - 
+                <strong>{{ log.event_type }}</strong>
+                {% if log.ip_address %} - {{ log.ip_address }}{% endif %}
+            </div>
+        {% empty %}
+            <p>No access logs yet.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2>Recent Change Logs</h2>
+        {% for log in change_logs %}
+            <div class="log-entry">
+                {{ log.timestamp|date:"M d, Y H:i" }} - 
+                {{ log.user|default:"System" }} - 
+                <strong>{{ log.change_type }}</strong> - 
+                {{ log.model_name }}
+            </div>
+        {% empty %}
+            <p>No change logs yet.</p>
+        {% endfor %}
+    </div>
+    
+    <p style="text-align: center; margin-top: 30px;">
+        <a href="/admin/">Go to Admin Panel</a>
+    </p>
+</body>
+</html>
